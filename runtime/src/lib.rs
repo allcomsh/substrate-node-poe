@@ -301,9 +301,14 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
+parameter_types! {
+	pub const DataBound: u8 = 20; // Set the bound of Proof in case the Proof overflow.
+}
+
 /// Configure the pallet-poe in pallets/poe.
 impl pallet_poe::Config for Runtime {
 	type Event = Event;
+	type DataBound = DataBound;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

@@ -52,8 +52,13 @@ impl system::Config for Test {
 	type OnSetCode = ();
 }
 
+parameter_types! {
+	pub const DataBound: u8 = 4;
+}
+
 impl pallet_poe::Config for Test {
 	type Event = Event;
+	type DataBound = DataBound;
 }
 
 // Build genesis storage according to the mock runtime.

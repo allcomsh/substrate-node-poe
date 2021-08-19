@@ -21,16 +21,20 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 	use sp_std::vec::Vec;
 
+	#[pallet::pallet]
+	#[pallet::generate_store(pub(super) trait Store)]
+	pub struct Pallet<T>(_);
+
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-	}
 
-	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	pub struct Pallet<T>(_);
+		/// The bound limited to the storage data(Vec<U8>).
+		#[pallet::constant]
+		type DataBound: Get<u8>;
+	}
 
 	// The pallet's runtime storage items.
 	// https://substrate.dev/docs/en/knowledgebase/runtime/storage
@@ -58,9 +62,10 @@ pub mod pallet {
 	// Errors inform users that something went wrong.
     #[pallet::error]
     pub enum Error<T> {
+		ProofOverflow,
         ProofAlreadyClaimed,
         NoSuchProof,
-        NotProofOwner,
+        NotProofOwner
     }
 
 	#[pallet::hooks]
@@ -81,6 +86,11 @@ pub mod pallet {
 			// This function will return an error if the extrinsic is not signed.
 			// https://substrate.dev/docs/en/knowledgebase/runtime/origin
 			let sender = ensure_signed(origin)?;
+
+			// Check proof's length. if the length is out of bounds, return an Error.
+			let bound = T::DataBound::get();
+
+			ensure!((proof.len() <= bound.into()), Error::<T>::ProofOverflow);
 
 			// Verify that the specified proof has not already been claimed.
 			ensure!(!Proofs::<T>::contains_key(&proof), Error::<T>::ProofAlreadyClaimed);
