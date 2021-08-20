@@ -16,9 +16,20 @@ fn create_claim_works() {
 }
 
 #[test]
+fn create_claim_failed_when_proof_overflow_nottrue() {
+    new_test_ext().execute_with(|| {
+        let proof = vec![0, 1, 2, 3]; // For test, the Bound of proof is set to 4.
+        assert_noop!(
+            PoeModule::create_claim(Origin::signed(1), proof.clone()),
+            Error::<Test>::ProofOverflow
+        );
+    })
+}
+
+#[test]
 fn create_claim_failed_when_proof_overflow() {
     new_test_ext().execute_with(|| {
-        let proof = vec![0, 1, 2, 3, 4]; // For test, the Bound of proof is set to 4.
+        let proof = vec![0, 1, 2, 3, 4, 5]; // For test, the Bound of proof is set to 4.
         assert_noop!(
             PoeModule::create_claim(Origin::signed(1), proof.clone()),
             Error::<Test>::ProofOverflow
